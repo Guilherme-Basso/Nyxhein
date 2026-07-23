@@ -6,6 +6,7 @@
     <title>Caixa da Casa</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --ink: #16302B;
@@ -458,6 +459,57 @@
         .form-msg.show { display: block; }
         .form-msg.ok { background: var(--positive-bg); color: var(--positive); }
         .form-msg.err { background: var(--negative-bg); color: var(--negative); }
+
+        /* ---------- Relatórios ---------- */
+        .filtros-relatorio {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filtros-relatorio .field { margin-bottom: 0; min-width: 140px; }
+
+        .chart-card {
+            background: var(--paper-raised);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card h2 {
+            font-family: 'Fraunces', serif;
+            font-size: 18px;
+            margin: 0 0 16px;
+        }
+
+        .chart-wrap {
+            position: relative;
+            height: 320px;
+        }
+
+        .chart-wrap.pequeno { height: 260px; }
+
+        .resumo-ano {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .resumo-ano .fig .value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 26px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .resumo-ano .fig .caption {
+            font-size: 12px;
+            color: var(--ink-soft);
+        }
     </style>
 </head>
 <body>
@@ -471,6 +523,7 @@
         </div>
         <div class="topbar-actions">
             <div class="pills" id="filtroTitular"></div>
+            <button class="btn-config" id="btnAbrirRelatorios">📊 Relatórios</button>
             <button class="btn-config" id="btnAbrirConfig">⚙ Configurações</button>
         </div>
     </header>
@@ -564,6 +617,56 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- ===================== RELATÓRIOS ===================== -->
+    <div id="viewRelatorios" style="display:none">
+
+        <div class="block-head">
+            <button class="link-voltar" id="btnVoltarRelatorios">&larr; Voltar ao painel</button>
+        </div>
+
+        <div class="filtros-relatorio">
+            <div class="field">
+                <label for="relAno">Ano</label>
+                <select id="relAno"></select>
+            </div>
+            <div class="field">
+                <label for="relTitular">Titular</label>
+                <select id="relTitular">
+                    <option value="">Todos</option>
+                    <option value="GUILHERME">GUILHERME</option>
+                    <option value="BIANCA">BIANCA</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="relStatus">Situação</label>
+                <select id="relStatus">
+                    <option value="">Todas</option>
+                    <option value="PAGO">Só pagas</option>
+                    <option value="PENDENTE">Só pendentes</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="resumo-ano" id="resumoAno"></div>
+
+        <div class="chart-card">
+            <h2>Receita x Despesa por mês</h2>
+            <div class="chart-wrap"><canvas id="chartMensal"></canvas></div>
+        </div>
+
+        <div class="cols">
+            <div class="chart-card">
+                <h2>Para onde foi o dinheiro (despesas por categoria)</h2>
+                <div class="chart-wrap pequeno"><canvas id="chartDespesas"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h2>De onde veio (receitas por categoria)</h2>
+                <div class="chart-wrap pequeno"><canvas id="chartReceitas"></canvas></div>
+            </div>
+        </div>
+
     </div>
 
     <!-- ===================== CONFIGURAÇÕES ===================== -->
@@ -719,6 +822,17 @@
         document.getElementById('viewDashboard').style.display = 'block';
     });
 
+    document.getElementById('btnAbrirRelatorios').addEventListener('click', () => {
+        document.getElementById('viewDashboard').style.display = 'none';
+        document.getElementById('viewRelatorios').style.display = 'block';
+        carregarRelatorios();
+    });
+
+    document.getElementById('btnVoltarRelatorios').addEventListener('click', () => {
+        document.getElementById('viewRelatorios').style.display = 'none';
+        document.getElementById('viewDashboard').style.display = 'block';
+    });
+
     /* ---------------- Filtro por titular (painel principal) ---------------- */
 
     function montarFiltroTitular() {
@@ -750,11 +864,12 @@
             `<option value="${c.id}">${c.nome} — ${c.tipo === 'RECEITA' ? 'receita' : 'despesa'}</option>`
         ).join('');
 
-        const titulares = titularesDisponiveis();
+        // Titular é um enum fixo no backend (não vem do banco), então listamos
+        // direto aqui — se adicionar um novo valor no enum Titular.java, inclua
+        // a opção correspondente nesta lista também.
+        const TITULARES_POSSIVEIS = ['GUILHERME', 'BIANCA'];
         const selectTitular = document.getElementById('contaTitular');
-        selectTitular.innerHTML = titulares.length
-            ? titulares.map(t => `<option value="${t}">${t}</option>`).join('')
-            : '<option value="">Cadastre pelo menos uma conta via API antes</option>';
+        selectTitular.innerHTML = TITULARES_POSSIVEIS.map(t => `<option value="${t}">${t}</option>`).join('');
     }
 
     /* ---------------- Painel principal ---------------- */
@@ -1101,6 +1216,135 @@
             msg.textContent = err.message;
             msg.classList.add('show', 'err');
         }
+    }
+
+    /* ==================================================================== */
+    /* ============================ RELATÓRIOS ============================= */
+    /* ==================================================================== */
+
+    const CORES_CATEGORIA = ['#2F6F5E', '#B8912F', '#B5473A', '#4C5F5A', '#7B9E8E', '#D2A857', '#8A5A4E', '#5C7A8A'];
+
+    let chartMensal, chartDespesas, chartReceitas;
+    let relatoriosInicializados = false;
+
+    function montarSeletorAno() {
+        const select = document.getElementById('relAno');
+        const anoAtual = new Date().getFullYear();
+        const anos = [];
+        for (let a = anoAtual + 1; a >= anoAtual - 4; a--) anos.push(a);
+
+        select.innerHTML = anos.map(a => `<option value="${a}" ${a === anoAtual ? 'selected' : ''}>${a}</option>`).join('');
+    }
+
+    function paramsRelatorio() {
+        const ano = document.getElementById('relAno').value;
+        const titular = document.getElementById('relTitular').value;
+        const status = document.getElementById('relStatus').value;
+
+        let query = `ano=${ano}`;
+        if (titular) query += `&titular=${titular}`;
+        if (status) query += `&status=${status}`;
+        return query;
+    }
+
+    async function carregarRelatorios() {
+        if (!relatoriosInicializados) {
+            montarSeletorAno();
+            document.getElementById('relAno').addEventListener('change', carregarRelatorios);
+            document.getElementById('relTitular').addEventListener('change', carregarRelatorios);
+            document.getElementById('relStatus').addEventListener('change', carregarRelatorios);
+            relatoriosInicializados = true;
+        }
+
+        const query = paramsRelatorio();
+
+        const [porCategoria, mensal] = await Promise.all([
+            fetch(`${API}/api/relatorios/por-categoria?${query}`).then(r => r.json()),
+            fetch(`${API}/api/relatorios/mensal?${query}`).then(r => r.json())
+        ]);
+
+        renderizarResumoAno(mensal);
+        renderizarChartMensal(mensal);
+        renderizarChartCategorias('chartDespesas', porCategoria.filter(c => c.tipo === 'DESPESA'), chartDespesas, (c) => chartDespesas = c);
+        renderizarChartCategorias('chartReceitas', porCategoria.filter(c => c.tipo === 'RECEITA'), chartReceitas, (c) => chartReceitas = c);
+    }
+
+    function renderizarResumoAno(mensal) {
+        const totalReceita = mensal.reduce((s, m) => s + m.totalReceita, 0);
+        const totalDespesa = mensal.reduce((s, m) => s + m.totalDespesa, 0);
+        const saldo = totalReceita - totalDespesa;
+
+        document.getElementById('resumoAno').innerHTML = `
+    <div class="fig"><div class="value" style="color:var(--positive)">${fmtMoeda(totalReceita)}</div><div class="caption">receita no ano</div></div>
+    <div class="fig"><div class="value" style="color:var(--negative)">${fmtMoeda(totalDespesa)}</div><div class="caption">despesa no ano</div></div>
+    <div class="fig"><div class="value">${fmtMoeda(saldo)}</div><div class="caption">saldo do ano</div></div>
+  `;
+    }
+
+    function renderizarChartMensal(mensal) {
+        const nomesMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        const ctx = document.getElementById('chartMensal');
+
+        const dados = {
+            labels: mensal.map(m => nomesMeses[m.mes - 1]),
+            datasets: [
+                { label: 'Receita', data: mensal.map(m => m.totalReceita), backgroundColor: '#2F6F5E', borderRadius: 4 },
+                { label: 'Despesa', data: mensal.map(m => m.totalDespesa), backgroundColor: '#B5473A', borderRadius: 4 }
+            ]
+        };
+
+        if (chartMensal) {
+            chartMensal.data = dados;
+            chartMensal.update();
+            return;
+        }
+
+        chartMensal = new Chart(ctx, {
+            type: 'bar',
+            data: dados,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { font: { family: 'Inter' } } } },
+                scales: {
+                    y: { ticks: { callback: (v) => fmtMoeda(v) } }
+                }
+            }
+        });
+    }
+
+    function renderizarChartCategorias(canvasId, dados, chartRef, setChartRef) {
+        const ctx = document.getElementById(canvasId);
+
+        const config = {
+            labels: dados.map(d => d.categoriaNome),
+            datasets: [{
+                data: dados.map(d => d.total),
+                backgroundColor: dados.map((_, i) => CORES_CATEGORIA[i % CORES_CATEGORIA.length]),
+                borderWidth: 0
+            }]
+        };
+
+        if (chartRef) {
+            chartRef.data = config;
+            chartRef.update();
+            return;
+        }
+
+        const novoChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: config,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Inter' }, boxWidth: 12 } },
+                    tooltip: { callbacks: { label: (item) => `${item.label}: ${fmtMoeda(item.raw)}` } }
+                }
+            }
+        });
+
+        setChartRef(novoChart);
     }
 
     /* ---------------- Início ---------------- */
