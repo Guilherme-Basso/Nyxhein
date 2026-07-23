@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caixa da Casa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #16302B;
+            --ink-soft: #4C5F5A;
+            --paper: #F7F4EC;
+            --paper-raised: #FFFDF8;
+            --line: #DAD3C0;
+            --gold: #B8912F;
+            --positive: #2F6F5E;
+            --negative: #B5473A;
+            --positive-bg: #E7EFE9;
+            --negative-bg: #F5E6E1;
+            --radius: 10px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        /* ---------- Header ---------- */
+        .topbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .brand h1 {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 30px;
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        .brand p {
+            margin: 2px 0 0;
+            color: var(--ink-soft);
+            font-size: 14px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pills {
+            display: flex;
+            gap: 6px;
+            background: var(--paper-raised);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 4px;
+        }
+
+        .pill {
+            border: none;
+            background: transparent;
+            padding: 7px 16px;
+            border-radius: 999px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink-soft);
+            cursor: pointer;
+            transition: background .15s ease, color .15s ease;
+        }
+
+        .pill:hover { color: var(--ink); }
+
+        .pill.active {
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .btn-config {
+            border: 1px solid var(--line);
+            background: var(--paper-raised);
+            padding: 9px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink-soft);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-config:hover { color: var(--ink); border-color: var(--ink); }
+
+        /* ---------- Hero saldo ---------- */
+        .hero {
+            position: relative;
+            border-radius: 16px;
+            background: var(--paper-raised);
+            border: 1px solid var(--line);
+            padding: 32px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            background-image: repeating-linear-gradient(
+                    to bottom,
+                    transparent,
+                    transparent 27px,
+                    var(--line) 28px
+            );
+        }
+
+        .hero-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--ink-soft);
+            font-weight: 600;
+        }
+
+        .hero-grid {
+            display: flex;
+            gap: 48px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .hero-figure .value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 40px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.1;
+        }
+
+        .hero-figure .caption {
+            font-size: 13px;
+            color: var(--ink-soft);
+            margin-top: 4px;
+        }
+
+        /* ---------- Section headings ---------- */
+        section.block {
+            margin-bottom: 28px;
+        }
+
+        .block-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .block-head h2 {
+            font-family: 'Fraunces', serif;
+            font-size: 19px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .link-voltar {
+            border: none;
+            background: none;
+            color: var(--ink-soft);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .link-voltar:hover { color: var(--ink); }
+
+        /* ---------- Contas grid ---------- */
+        .contas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .conta-card {
+            background: var(--paper-raised);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .conta-card .nome {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .conta-card .meta {
+            font-size: 12px;
+            color: var(--ink-soft);
+            margin: 2px 0 12px;
+        }
+
+        .conta-card .saldo-linha {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 14px;
+            font-variant-numeric: tabular-nums;
+            padding: 3px 0;
+        }
+
+        .conta-card .saldo-linha .lbl {
+            font-family: 'Inter', sans-serif;
+            color: var(--ink-soft);
+            font-size: 12px;
+        }
+
+        /* ---------- Layout duas colunas ---------- */
+        .cols {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 820px) {
+            .cols { grid-template-columns: 1fr; }
+        }
+
+        /* ---------- Transações ---------- */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .tab {
+            border: 1px solid var(--line);
+            background: var(--paper-raised);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ink-soft);
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: var(--ink);
+            color: var(--paper);
+            border-color: var(--ink);
+        }
+
+        .lancamento {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--paper-raised);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            margin-bottom: 8px;
+        }
+
+        .lancamento .desc {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .lancamento .desc .titulo {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lancamento .desc .sub {
+            font-size: 12px;
+            color: var(--ink-soft);
+            margin-top: 2px;
+        }
+
+        .lancamento .valor {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+            font-size: 14px;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .valor.despesa { color: var(--negative); }
+        .valor.receita { color: var(--positive); }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .badge.pendente { background: var(--negative-bg); color: var(--negative); }
+        .badge.pago { background: var(--positive-bg); color: var(--positive); }
+        .badge.receita { background: var(--positive-bg); color: var(--positive); }
+        .badge.despesa { background: var(--negative-bg); color: var(--negative); }
+
+        .btn-pagar {
+            border: 1px solid var(--ink);
+            background: transparent;
+            color: var(--ink);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 7px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-pagar:hover { background: var(--ink); color: var(--paper); }
+
+        .row-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-small {
+            border: 1px solid var(--line);
+            background: transparent;
+            padding: 6px 11px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-soft);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-small:hover { background: var(--paper); color: var(--ink); }
+        .btn-small.danger { color: var(--negative); border-color: var(--negative-bg); }
+        .btn-small.danger:hover { background: var(--negative-bg); }
+
+        .empty {
+            color: var(--ink-soft);
+            font-size: 13px;
+            padding: 18px;
+            text-align: center;
+            border: 1px dashed var(--line);
+            border-radius: var(--radius);
+        }
+
+        /* ---------- Formulário ---------- */
+        .form-card {
+            background: var(--paper-raised);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 20px;
+            position: sticky;
+            top: 24px;
+        }
+
+        .form-card h2 {
+            font-family: 'Fraunces', serif;
+            font-size: 18px;
+            margin: 0 0 14px;
+        }
+
+        .field {
+            margin-bottom: 12px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-soft);
+            margin-bottom: 5px;
+        }
+
+        .field input, .field select {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            background: var(--paper);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: var(--ink);
+        }
+
+        .field input:focus-visible, .field select:focus-visible, .pill:focus-visible, .tab:focus-visible,
+        .btn-pagar:focus-visible, .btn-submit:focus-visible, .btn-config:focus-visible, .btn-small:focus-visible {
+            outline: 2px solid var(--gold);
+            outline-offset: 1px;
+        }
+
+        .field-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .field-row .field { flex: 1; }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            padding: 11px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        .btn-submit:hover { background: var(--positive); }
+
+        .btn-cancelar {
+            width: 100%;
+            background: transparent;
+            color: var(--ink-soft);
+            border: 1px solid var(--line);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .btn-cancelar:hover { color: var(--ink); }
+
+        .form-msg {
+            font-size: 13px;
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 7px;
+            display: none;
+        }
+
+        .form-msg.show { display: block; }
+        .form-msg.ok { background: var(--positive-bg); color: var(--positive); }
+        .form-msg.err { background: var(--negative-bg); color: var(--negative); }
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <header class="topbar">
+        <div class="brand">
+            <h1>Caixa da Casa</h1>
+            <p id="subtitulo">Controle financeiro da família</p>
+        </div>
+        <div class="topbar-actions">
+            <div class="pills" id="filtroTitular"></div>
+            <button class="btn-config" id="btnAbrirConfig">⚙ Configurações</button>
+        </div>
+    </header>
+
+    <!-- ===================== PAINEL PRINCIPAL ===================== -->
+    <div id="viewDashboard">
+
+        <div class="hero">
+            <div class="hero-label" id="heroLabel">Saldo — todos</div>
+            <div class="hero-grid">
+                <div class="hero-figure">
+                    <div class="value" id="saldoAtualHero">R$ 0,00</div>
+                    <div class="caption">disponível agora</div>
+                </div>
+                <div class="hero-figure">
+                    <div class="value" id="saldoPrevistoHero">R$ 0,00</div>
+                    <div class="caption">depois das pendências</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cols">
+            <div>
+                <section class="block">
+                    <div class="block-head"><h2>Contas</h2></div>
+                    <div class="contas-grid" id="contasGrid">
+                        <div class="empty">Nenhuma conta encontrada.</div>
+                    </div>
+                </section>
+
+                <section class="block">
+                    <div class="block-head"><h2>Lançamentos</h2></div>
+                    <div class="tabs" id="tabsStatus">
+                        <button class="tab active" data-status="TODAS">Todas</button>
+                        <button class="tab" data-status="PENDENTE">Pendentes</button>
+                        <button class="tab" data-status="PAGO">Pagas</button>
+                    </div>
+                    <div id="listaTransacoes">
+                        <div class="empty">Nenhum lançamento ainda.</div>
+                    </div>
+                </section>
+            </div>
+
+            <div>
+                <div class="form-card">
+                    <h2>Novo lançamento</h2>
+                    <form id="formTransacao">
+                        <div class="field">
+                            <label for="descricao">Descrição</label>
+                            <input type="text" id="descricao" required placeholder="Ex: Conta de luz">
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field">
+                                <label for="valor">Valor (R$)</label>
+                                <input type="number" id="valor" step="0.01" min="0" required placeholder="0,00">
+                            </div>
+                            <div class="field">
+                                <label for="status">Situação</label>
+                                <select id="status">
+                                    <option value="PAGO">Paga</option>
+                                    <option value="PENDENTE">Pendente</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field">
+                                <label for="dataTransacao">Data</label>
+                                <input type="date" id="dataTransacao" required>
+                            </div>
+                            <div class="field">
+                                <label for="dataVencimento">Vencimento</label>
+                                <input type="date" id="dataVencimento">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="conta">Conta</label>
+                            <select id="conta" required></select>
+                        </div>
+
+                        <div class="field">
+                            <label for="categoria">Categoria</label>
+                            <select id="categoria" required></select>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Lançar</button>
+                        <div class="form-msg" id="formMsg"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== CONFIGURAÇÕES ===================== -->
+    <div id="viewConfig" style="display:none">
+
+        <div class="block-head">
+            <button class="link-voltar" id="btnVoltar">&larr; Voltar ao painel</button>
+        </div>
+
+        <section class="block">
+            <div class="cols">
+                <div>
+                    <div class="block-head"><h2>Categorias</h2></div>
+                    <div id="listaCategoriasConfig">
+                        <div class="empty">Nenhuma categoria cadastrada.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-card">
+                        <h2 id="tituloFormCategoria">Nova categoria</h2>
+                        <form id="formCategoria">
+                            <div class="field">
+                                <label for="catNome">Nome</label>
+                                <input type="text" id="catNome" required placeholder="Ex: Mercado">
+                            </div>
+                            <div class="field">
+                                <label for="catTipo">Tipo</label>
+                                <select id="catTipo">
+                                    <option value="DESPESA">Despesa</option>
+                                    <option value="RECEITA">Receita</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-submit" id="btnSubmitCategoria">Adicionar</button>
+                            <button type="button" class="btn-cancelar" id="btnCancelarCategoria" style="display:none">Cancelar edição</button>
+                            <div class="form-msg" id="catMsg"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="block">
+            <div class="cols">
+                <div>
+                    <div class="block-head"><h2>Contas</h2></div>
+                    <div id="listaContasConfig">
+                        <div class="empty">Nenhuma conta cadastrada.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-card">
+                        <h2 id="tituloFormConta">Nova conta</h2>
+                        <form id="formConta">
+                            <div class="field">
+                                <label for="contaNome">Nome</label>
+                                <input type="text" id="contaNome" required placeholder="Ex: Caixa">
+                            </div>
+                            <div class="field-row">
+                                <div class="field">
+                                    <label for="contaTipo">Tipo</label>
+                                    <select id="contaTipo">
+                                        <option value="CORRENTE">Corrente</option>
+                                        <option value="POUPANCA">Poupança</option>
+                                        <option value="CARTEIRA">Carteira</option>
+                                        <option value="INVESTIMENTO">Investimento</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="contaTitular">Titular</label>
+                                    <select id="contaTitular"></select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label for="contaSaldoInicial">Saldo inicial (R$)</label>
+                                <input type="number" id="contaSaldoInicial" step="0.01" required placeholder="0,00">
+                            </div>
+                            <button type="submit" class="btn-submit" id="btnSubmitConta">Adicionar</button>
+                            <button type="button" class="btn-cancelar" id="btnCancelarConta" style="display:none">Cancelar edição</button>
+                            <div class="form-msg" id="contaMsg"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</div>
+
+<script>
+    const API = ''; // mesma origem (servido pelo próprio Spring Boot)
+
+    let contas = [];
+    let categorias = [];
+    let transacoes = [];
+    let contasComSaldo = [];
+    let titularSelecionado = 'TODOS';
+    let statusSelecionado = 'TODAS';
+    let editandoCategoriaId = null;
+    let editandoContaId = null;
+
+    const fmtMoeda = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const fmtData = (iso) => iso ? new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR') : '';
+
+    async function extrairErro(resp) {
+        try {
+            const data = await resp.json();
+            return data.message || 'Não foi possível concluir a operação.';
+        } catch {
+            return 'Não foi possível concluir a operação.';
+        }
+    }
+
+    async function carregarTudo() {
+        const [contasResp, categoriasResp, transacoesResp] = await Promise.all([
+            fetch(`${API}/api/contas`).then(r => r.json()),
+            fetch(`${API}/api/categorias`).then(r => r.json()),
+            fetch(`${API}/api/transacoes`).then(r => r.json())
+        ]);
+
+        contas = contasResp;
+        categorias = categoriasResp;
+        transacoes = transacoesResp;
+
+        contasComSaldo = await Promise.all(
+            contas.map(async (c) => {
+                const saldo = await fetch(`${API}/api/contas/${c.id}/saldo`).then(r => r.json());
+                return { ...c, ...saldo };
+            })
+        );
+
+        montarFiltroTitular();
+        preencherSelects();
+        renderizarTudo();
+        renderizarConfig();
+    }
+
+    function titularesDisponiveis() {
+        return [...new Set(contas.map(c => c.titular))];
+    }
+
+    /* ---------------- Navegação entre painel e configurações ---------------- */
+
+    document.getElementById('btnAbrirConfig').addEventListener('click', () => {
+        document.getElementById('viewDashboard').style.display = 'none';
+        document.getElementById('viewConfig').style.display = 'block';
+    });
+
+    document.getElementById('btnVoltar').addEventListener('click', () => {
+        document.getElementById('viewConfig').style.display = 'none';
+        document.getElementById('viewDashboard').style.display = 'block';
+    });
+
+    /* ---------------- Filtro por titular (painel principal) ---------------- */
+
+    function montarFiltroTitular() {
+        const container = document.getElementById('filtroTitular');
+        const titulares = titularesDisponiveis();
+        const opcoes = ['TODOS', ...titulares];
+
+        container.innerHTML = opcoes.map(t =>
+            `<button class="pill ${t === titularSelecionado ? 'active' : ''}" data-titular="${t}">${t === 'TODOS' ? 'Todos' : t}</button>`
+        ).join('');
+
+        container.querySelectorAll('.pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                titularSelecionado = btn.dataset.titular;
+                montarFiltroTitular();
+                renderizarTudo();
+            });
+        });
+    }
+
+    function preencherSelects() {
+        const selectConta = document.getElementById('conta');
+        selectConta.innerHTML = contas.map(c =>
+            `<option value="${c.id}">${c.nome} (${c.titular})</option>`
+        ).join('');
+
+        const selectCategoria = document.getElementById('categoria');
+        selectCategoria.innerHTML = categorias.map(c =>
+            `<option value="${c.id}">${c.nome} — ${c.tipo === 'RECEITA' ? 'receita' : 'despesa'}</option>`
+        ).join('');
+
+        const titulares = titularesDisponiveis();
+        const selectTitular = document.getElementById('contaTitular');
+        selectTitular.innerHTML = titulares.length
+            ? titulares.map(t => `<option value="${t}">${t}</option>`).join('')
+            : '<option value="">Cadastre pelo menos uma conta via API antes</option>';
+    }
+
+    /* ---------------- Painel principal ---------------- */
+
+    function contasFiltradas() {
+        if (titularSelecionado === 'TODOS') return contasComSaldo;
+        return contasComSaldo.filter(c => c.titular === titularSelecionado);
+    }
+
+    function renderizarTudo() {
+        renderizarHero();
+        renderizarContas();
+        renderizarTransacoes();
+    }
+
+    function renderizarHero() {
+        const lista = contasFiltradas();
+        const saldoAtual = lista.reduce((soma, c) => soma + c.saldoAtual, 0);
+        const saldoPrevisto = lista.reduce((soma, c) => soma + c.saldoPrevisto, 0);
+
+        document.getElementById('heroLabel').textContent =
+            titularSelecionado === 'TODOS' ? 'Saldo — todos' : `Saldo — ${titularSelecionado}`;
+        document.getElementById('saldoAtualHero').textContent = fmtMoeda(saldoAtual);
+        document.getElementById('saldoPrevistoHero').textContent = fmtMoeda(saldoPrevisto);
+    }
+
+    function renderizarContas() {
+        const grid = document.getElementById('contasGrid');
+        const lista = contasFiltradas();
+
+        if (lista.length === 0) {
+            grid.innerHTML = '<div class="empty">Nenhuma conta cadastrada ainda. Adicione uma em Configurações.</div>';
+            return;
+        }
+
+        grid.innerHTML = lista.map(c => `
+    <div class="conta-card">
+      <div class="nome">${c.nome}</div>
+      <div class="meta">${c.tipo} · ${c.titular}</div>
+      <div class="saldo-linha"><span class="lbl">Atual</span><span>${fmtMoeda(c.saldoAtual)}</span></div>
+      <div class="saldo-linha"><span class="lbl">Previsto</span><span>${fmtMoeda(c.saldoPrevisto)}</span></div>
+    </div>
+  `).join('');
+    }
+
+    function renderizarTransacoes() {
+        document.querySelectorAll('#tabsStatus .tab').forEach(t =>
+            t.classList.toggle('active', t.dataset.status === statusSelecionado)
+        );
+
+        const idsContasVisiveis = new Set(contasFiltradas().map(c => c.id));
+
+        let lista = transacoes.filter(t => idsContasVisiveis.has(t.conta.id));
+        if (statusSelecionado !== 'TODAS') {
+            lista = lista.filter(t => t.status === statusSelecionado);
+        }
+        lista = [...lista].sort((a, b) => (b.dataTransacao || '').localeCompare(a.dataTransacao || ''));
+
+        const container = document.getElementById('listaTransacoes');
+
+        if (lista.length === 0) {
+            container.innerHTML = '<div class="empty">Nenhum lançamento encontrado para este filtro.</div>';
+            return;
+        }
+
+        container.innerHTML = lista.map(t => {
+            const despesa = t.categoria.tipo === 'DESPESA';
+            const sinal = despesa ? '−' : '+';
+            return `
+      <div class="lancamento">
+        <div class="desc">
+          <div class="titulo">${t.descricao}</div>
+          <div class="sub">${t.categoria.nome} · ${t.conta.nome} · ${fmtData(t.dataTransacao)}${t.dataVencimento ? ' · vence ' + fmtData(t.dataVencimento) : ''}</div>
+        </div>
+        <span class="badge ${t.status.toLowerCase()}">${t.status === 'PAGO' ? 'Paga' : 'Pendente'}</span>
+        <div class="valor ${despesa ? 'despesa' : 'receita'}">${sinal} ${fmtMoeda(t.valor)}</div>
+        ${t.status === 'PENDENTE' ? `<button class="btn-pagar" data-id="${t.id}">Marcar paga</button>` : ''}
+      </div>
+    `;
+        }).join('');
+
+        container.querySelectorAll('.btn-pagar').forEach(btn => {
+            btn.addEventListener('click', () => marcarComoPaga(btn.dataset.id));
+        });
+    }
+
+    async function marcarComoPaga(id) {
+        await fetch(`${API}/api/transacoes/${id}/pagar`, { method: 'PATCH' });
+        await carregarTudo();
+    }
+
+    document.getElementById('tabsStatus').addEventListener('click', (e) => {
+        if (!e.target.classList.contains('tab')) return;
+        statusSelecionado = e.target.dataset.status;
+        renderizarTransacoes();
+    });
+
+    document.getElementById('formTransacao').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('formMsg');
+        msg.className = 'form-msg';
+
+        const contaId = document.getElementById('conta').value;
+        const categoriaId = document.getElementById('categoria').value;
+
+        const payload = {
+            descricao: document.getElementById('descricao').value,
+            valor: parseFloat(document.getElementById('valor').value),
+            dataTransacao: document.getElementById('dataTransacao').value,
+            status: document.getElementById('status').value,
+            dataVencimento: document.getElementById('dataVencimento').value || null
+        };
+
+        try {
+            const resp = await fetch(`${API}/api/transacoes?contaId=${contaId}&categoriaId=${categoriaId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!resp.ok) throw new Error(await extrairErro(resp));
+
+            msg.textContent = 'Lançamento adicionado.';
+            msg.classList.add('show', 'ok');
+            e.target.reset();
+            document.getElementById('dataTransacao').valueAsDate = new Date();
+            await carregarTudo();
+        } catch (err) {
+            msg.textContent = err.message;
+            msg.classList.add('show', 'err');
+        }
+    });
+
+    /* ==================================================================== */
+    /* ============================ CONFIGURAÇÕES ========================== */
+    /* ==================================================================== */
+
+    function renderizarConfig() {
+        renderizarConfigCategorias();
+        renderizarConfigContas();
+    }
+
+    /* ---------------- Categorias ---------------- */
+
+    function renderizarConfigCategorias() {
+        const container = document.getElementById('listaCategoriasConfig');
+
+        if (categorias.length === 0) {
+            container.innerHTML = '<div class="empty">Nenhuma categoria cadastrada.</div>';
+            return;
+        }
+
+        container.innerHTML = categorias.map(c => `
+    <div class="lancamento">
+      <div class="desc">
+        <div class="titulo">${c.nome}</div>
+      </div>
+      <span class="badge ${c.tipo.toLowerCase()}">${c.tipo === 'RECEITA' ? 'Receita' : 'Despesa'}</span>
+      <div class="row-actions">
+        <button class="btn-small" data-editar="${c.id}">Editar</button>
+        <button class="btn-small danger" data-excluir="${c.id}">Excluir</button>
+      </div>
+    </div>
+  `).join('');
+
+        container.querySelectorAll('[data-editar]').forEach(btn =>
+            btn.addEventListener('click', () => iniciarEdicaoCategoria(Number(btn.dataset.editar)))
+        );
+        container.querySelectorAll('[data-excluir]').forEach(btn =>
+            btn.addEventListener('click', () => excluirCategoria(Number(btn.dataset.excluir)))
+        );
+    }
+
+    function iniciarEdicaoCategoria(id) {
+        const categoria = categorias.find(c => c.id === id);
+        if (!categoria) return;
+
+        editandoCategoriaId = id;
+        document.getElementById('catNome').value = categoria.nome;
+        document.getElementById('catTipo').value = categoria.tipo;
+        document.getElementById('tituloFormCategoria').textContent = 'Editar categoria';
+        document.getElementById('btnSubmitCategoria').textContent = 'Salvar alterações';
+        document.getElementById('btnCancelarCategoria').style.display = 'block';
+        document.getElementById('catNome').focus();
+    }
+
+    function cancelarEdicaoCategoria() {
+        editandoCategoriaId = null;
+        document.getElementById('formCategoria').reset();
+        document.getElementById('tituloFormCategoria').textContent = 'Nova categoria';
+        document.getElementById('btnSubmitCategoria').textContent = 'Adicionar';
+        document.getElementById('btnCancelarCategoria').style.display = 'none';
+    }
+
+    document.getElementById('btnCancelarCategoria').addEventListener('click', cancelarEdicaoCategoria);
+
+    document.getElementById('formCategoria').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('catMsg');
+        msg.className = 'form-msg';
+
+        const payload = {
+            nome: document.getElementById('catNome').value,
+            tipo: document.getElementById('catTipo').value
+        };
+
+        try {
+            const url = editandoCategoriaId ? `${API}/api/categorias/${editandoCategoriaId}` : `${API}/api/categorias`;
+            const method = editandoCategoriaId ? 'PUT' : 'POST';
+
+            const resp = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!resp.ok) throw new Error(await extrairErro(resp));
+
+            msg.textContent = editandoCategoriaId ? 'Categoria atualizada.' : 'Categoria adicionada.';
+            msg.classList.add('show', 'ok');
+            cancelarEdicaoCategoria();
+            await carregarTudo();
+        } catch (err) {
+            msg.textContent = err.message;
+            msg.classList.add('show', 'err');
+        }
+    });
+
+    async function excluirCategoria(id) {
+        if (!confirm('Excluir esta categoria?')) return;
+        const msg = document.getElementById('catMsg');
+        msg.className = 'form-msg';
+
+        try {
+            const resp = await fetch(`${API}/api/categorias/${id}`, { method: 'DELETE' });
+            if (!resp.ok) throw new Error(await extrairErro(resp));
+            await carregarTudo();
+        } catch (err) {
+            msg.textContent = err.message;
+            msg.classList.add('show', 'err');
+        }
+    }
+
+    /* ---------------- Contas ---------------- */
+
+    function renderizarConfigContas() {
+        const container = document.getElementById('listaContasConfig');
+
+        if (contas.length === 0) {
+            container.innerHTML = '<div class="empty">Nenhuma conta cadastrada.</div>';
+            return;
+        }
+
+        container.innerHTML = contas.map(c => `
+    <div class="lancamento">
+      <div class="desc">
+        <div class="titulo">${c.nome}</div>
+        <div class="sub">${c.tipo} · ${c.titular} · saldo inicial ${fmtMoeda(c.saldoInicial)}</div>
+      </div>
+      <div class="row-actions">
+        <button class="btn-small" data-editar="${c.id}">Editar</button>
+        <button class="btn-small danger" data-excluir="${c.id}">Excluir</button>
+      </div>
+    </div>
+  `).join('');
+
+        container.querySelectorAll('[data-editar]').forEach(btn =>
+            btn.addEventListener('click', () => iniciarEdicaoConta(Number(btn.dataset.editar)))
+        );
+        container.querySelectorAll('[data-excluir]').forEach(btn =>
+            btn.addEventListener('click', () => excluirConta(Number(btn.dataset.excluir)))
+        );
+    }
+
+    function iniciarEdicaoConta(id) {
+        const conta = contas.find(c => c.id === id);
+        if (!conta) return;
+
+        editandoContaId = id;
+        document.getElementById('contaNome').value = conta.nome;
+        document.getElementById('contaTipo').value = conta.tipo;
+        document.getElementById('contaTitular').value = conta.titular;
+        document.getElementById('contaSaldoInicial').value = conta.saldoInicial;
+        document.getElementById('tituloFormConta').textContent = 'Editar conta';
+        document.getElementById('btnSubmitConta').textContent = 'Salvar alterações';
+        document.getElementById('btnCancelarConta').style.display = 'block';
+        document.getElementById('contaNome').focus();
+    }
+
+    function cancelarEdicaoConta() {
+        editandoContaId = null;
+        document.getElementById('formConta').reset();
+        document.getElementById('tituloFormConta').textContent = 'Nova conta';
+        document.getElementById('btnSubmitConta').textContent = 'Adicionar';
+        document.getElementById('btnCancelarConta').style.display = 'none';
+    }
+
+    document.getElementById('btnCancelarConta').addEventListener('click', cancelarEdicaoConta);
+
+    document.getElementById('formConta').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('contaMsg');
+        msg.className = 'form-msg';
+
+        const payload = {
+            nome: document.getElementById('contaNome').value,
+            tipo: document.getElementById('contaTipo').value,
+            titular: document.getElementById('contaTitular').value,
+            saldoInicial: parseFloat(document.getElementById('contaSaldoInicial').value)
+        };
+
+        try {
+            const url = editandoContaId ? `${API}/api/contas/${editandoContaId}` : `${API}/api/contas`;
+            const method = editandoContaId ? 'PUT' : 'POST';
+
+            const resp = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!resp.ok) throw new Error(await extrairErro(resp));
+
+            msg.textContent = editandoContaId ? 'Conta atualizada.' : 'Conta adicionada.';
+            msg.classList.add('show', 'ok');
+            cancelarEdicaoConta();
+            await carregarTudo();
+        } catch (err) {
+            msg.textContent = err.message;
+            msg.classList.add('show', 'err');
+        }
+    });
+
+    async function excluirConta(id) {
+        if (!confirm('Excluir esta conta?')) return;
+        const msg = document.getElementById('contaMsg');
+        msg.className = 'form-msg';
+
+        try {
+            const resp = await fetch(`${API}/api/contas/${id}`, { method: 'DELETE' });
+            if (!resp.ok) throw new Error(await extrairErro(resp));
+            await carregarTudo();
+        } catch (err) {
+            msg.textContent = err.message;
+            msg.classList.add('show', 'err');
+        }
+    }
+
+    /* ---------------- Início ---------------- */
+
+    document.getElementById('dataTransacao').valueAsDate = new Date();
+    carregarTudo();
+</script>
+
+</body>
+</html>

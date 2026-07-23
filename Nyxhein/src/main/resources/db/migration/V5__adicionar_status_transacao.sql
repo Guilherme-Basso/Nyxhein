@@ -1,0 +1,2 @@
+ALTER TABLE transacao ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'PAGO';
+ALTER TABLE transacao ADD COLUMN data_vencimento DATE;
