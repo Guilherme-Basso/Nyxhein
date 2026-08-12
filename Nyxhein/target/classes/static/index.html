@@ -268,6 +268,18 @@
             border-color: var(--ink);
         }
 
+        .check-todas {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            color: var(--ink-soft);
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .check-todas input { cursor: pointer; }
+
         .lancamento {
             display: flex;
             align-items: center;
@@ -561,6 +573,10 @@
                         <button class="tab" data-status="PENDENTE">Pendentes</button>
                         <button class="tab" data-status="PAGO">Pagas</button>
                     </div>
+                    <label class="check-todas" id="checkMostrarTodas" style="display:none">
+                        <input type="checkbox" id="chkMostrarTodasPendentes">
+                        Mostrar todas as pendências (não só deste mês e do seguinte)
+                    </label>
                     <div id="listaTransacoes">
                         <div class="empty">Nenhum lançamento ainda.</div>
                     </div>
@@ -569,7 +585,7 @@
 
             <div>
                 <div class="form-card">
-                    <h2>Novo lançamento</h2>
+                    <h2 id="tituloFormTransacao">Novo lançamento</h2>
                     <form id="formTransacao">
                         <div class="field">
                             <label for="descricao">Descrição</label>
@@ -601,6 +617,11 @@
                             </div>
                         </div>
 
+                        <div class="field" id="campoParcelas">
+                            <label for="numeroParcelas">Repetir por quantos meses</label>
+                            <input type="number" id="numeroParcelas" min="1" max="60" value="1">
+                        </div>
+
                         <div class="field">
                             <label for="conta">Conta</label>
                             <select id="conta" required></select>
@@ -611,7 +632,8 @@
                             <select id="categoria" required></select>
                         </div>
 
-                        <button type="submit" class="btn-submit">Lançar</button>
+                        <button type="submit" class="btn-submit" id="btnSubmitTransacao">Lançar</button>
+                        <button type="button" class="btn-cancelar" id="btnCancelarTransacao" style="display:none">Cancelar edição</button>
                         <div class="form-msg" id="formMsg"></div>
                     </form>
                 </div>
@@ -767,6 +789,15 @@
     let contasComSaldo = [];
     let titularSelecionado = 'TODOS';
     let statusSelecionado = 'TODAS';
+    let mostrarTodasPendentes = false;
+
+    function dentroDoIntervaloPadrao(dataIso) {
+        const hoje = new Date();
+        const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+        const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0); // último dia do mês seguinte
+        const data = new Date(dataIso + 'T00:00:00');
+        return data >= inicio && data <= fim;
+    }
     let editandoCategoriaId = null;
     let editandoContaId = null;
 
@@ -920,11 +951,17 @@
             t.classList.toggle('active', t.dataset.status === statusSelecionado)
         );
 
+        document.getElementById('checkMostrarTodas').style.display =
+            statusSelecionado === 'PENDENTE' ? 'flex' : 'none';
+
         const idsContasVisiveis = new Set(contasFiltradas().map(c => c.id));
 
         let lista = transacoes.filter(t => idsContasVisiveis.has(t.conta.id));
         if (statusSelecionado !== 'TODAS') {
             lista = lista.filter(t => t.status === statusSelecionado);
+        }
+        if (statusSelecionado === 'PENDENTE' && !mostrarTodasPendentes) {
+            lista = lista.filter(t => dentroDoIntervaloPadrao(t.dataTransacao));
         }
         lista = [...lista].sort((a, b) => (b.dataTransacao || '').localeCompare(a.dataTransacao || ''));
 
@@ -946,7 +983,12 @@
         </div>
         <span class="badge ${t.status.toLowerCase()}">${t.status === 'PAGO' ? 'Paga' : 'Pendente'}</span>
         <div class="valor ${despesa ? 'despesa' : 'receita'}">${sinal} ${fmtMoeda(t.valor)}</div>
-        ${t.status === 'PENDENTE' ? `<button class="btn-pagar" data-id="${t.id}">Marcar paga</button>` : ''}
+        <div class="row-actions">
+          ${t.status === 'PENDENTE' ? `<button class="btn-pagar" data-id="${t.id}">Marcar paga</button>` : ''}
+          <button class="btn-small" data-editar-transacao="${t.id}">Editar</button>
+          <button class="btn-small danger" data-excluir-transacao="${t.id}">Excluir</button>
+          ${t.grupoRecorrencia ? `<button class="btn-small danger" data-cancelar-grupo="${t.grupoRecorrencia}">Cancelar restantes</button>` : ''}
+        </div>
       </div>
     `;
         }).join('');
@@ -954,6 +996,30 @@
         container.querySelectorAll('.btn-pagar').forEach(btn => {
             btn.addEventListener('click', () => marcarComoPaga(btn.dataset.id));
         });
+        container.querySelectorAll('[data-editar-transacao]').forEach(btn => {
+            btn.addEventListener('click', () => iniciarEdicaoTransacao(Number(btn.dataset.editarTransacao)));
+        });
+        container.querySelectorAll('[data-excluir-transacao]').forEach(btn => {
+            btn.addEventListener('click', () => excluirTransacao(Number(btn.dataset.excluirTransacao)));
+        });
+        container.querySelectorAll('[data-cancelar-grupo]').forEach(btn => {
+            btn.addEventListener('click', () => cancelarGrupoRecorrencia(btn.dataset.cancelarGrupo));
+        });
+    }
+
+    async function cancelarGrupoRecorrencia(grupo) {
+        if (!confirm('Cancelar todas as parcelas futuras (ainda pendentes) desta série? As já pagas não são afetadas.')) return;
+        const msg = document.getElementById('formMsg');
+        msg.className = 'form-msg';
+
+        try {
+            const resp = await fetch(`${API}/api/transacoes/grupo/${grupo}/pendentes`, { method: 'DELETE' });
+            if (!resp.ok) throw new Error(await extrairErro(resp));
+            await carregarTudo();
+        } catch (err) {
+            msg.textContent = err.message;
+            msg.classList.add('show', 'err');
+        }
     }
 
     async function marcarComoPaga(id) {
@@ -966,6 +1032,63 @@
         statusSelecionado = e.target.dataset.status;
         renderizarTransacoes();
     });
+
+    document.getElementById('chkMostrarTodasPendentes').addEventListener('change', (e) => {
+        mostrarTodasPendentes = e.target.checked;
+        renderizarTransacoes();
+    });
+
+    let editandoTransacaoId = null;
+
+    function iniciarEdicaoTransacao(id) {
+        const transacao = transacoes.find(t => t.id === id);
+        if (!transacao) return;
+
+        editandoTransacaoId = id;
+        document.getElementById('descricao').value = transacao.descricao;
+        document.getElementById('valor').value = transacao.valor;
+        document.getElementById('status').value = transacao.status;
+        document.getElementById('dataTransacao').value = transacao.dataTransacao;
+        document.getElementById('dataVencimento').value = transacao.dataVencimento || '';
+        document.getElementById('conta').value = transacao.conta.id;
+        document.getElementById('categoria').value = transacao.categoria.id;
+
+        document.getElementById('campoParcelas').style.display = 'none';
+
+        document.getElementById('tituloFormTransacao').textContent = 'Editar lançamento';
+        document.getElementById('btnSubmitTransacao').textContent = 'Salvar alterações';
+        document.getElementById('btnCancelarTransacao').style.display = 'block';
+        document.getElementById('descricao').focus();
+        document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function cancelarEdicaoTransacao() {
+        editandoTransacaoId = null;
+        document.getElementById('formTransacao').reset();
+        document.getElementById('dataTransacao').valueAsDate = new Date();
+        document.getElementById('campoParcelas').style.display = 'block';
+        document.getElementById('tituloFormTransacao').textContent = 'Novo lançamento';
+        document.getElementById('btnSubmitTransacao').textContent = 'Lançar';
+        document.getElementById('btnCancelarTransacao').style.display = 'none';
+    }
+
+    document.getElementById('btnCancelarTransacao').addEventListener('click', cancelarEdicaoTransacao);
+
+    async function excluirTransacao(id) {
+        if (!confirm('Excluir este lançamento?')) return;
+        const msg = document.getElementById('formMsg');
+        msg.className = 'form-msg';
+
+        try {
+            const resp = await fetch(`${API}/api/transacoes/${id}`, { method: 'DELETE' });
+            if (!resp.ok) throw new Error(await extrairErro(resp));
+            if (editandoTransacaoId === id) cancelarEdicaoTransacao();
+            await carregarTudo();
+        } catch (err) {
+            msg.textContent = err.message;
+            msg.classList.add('show', 'err');
+        }
+    }
 
     document.getElementById('formTransacao').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -983,19 +1106,31 @@
             dataVencimento: document.getElementById('dataVencimento').value || null
         };
 
+        if (!editandoTransacaoId) {
+            payload.numeroParcelas = parseInt(document.getElementById('numeroParcelas').value) || 1;
+        }
+
         try {
-            const resp = await fetch(`${API}/api/transacoes?contaId=${contaId}&categoriaId=${categoriaId}`, {
-                method: 'POST',
+            const url = editandoTransacaoId
+                ? `${API}/api/transacoes/${editandoTransacaoId}?contaId=${contaId}&categoriaId=${categoriaId}`
+                : `${API}/api/transacoes?contaId=${contaId}&categoriaId=${categoriaId}`;
+            const method = editandoTransacaoId ? 'PUT' : 'POST';
+
+            const resp = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json; charset=utf-8' },
                 body: JSON.stringify(payload)
             });
 
             if (!resp.ok) throw new Error(await extrairErro(resp));
 
-            msg.textContent = 'Lançamento adicionado.';
+            const resultado = await resp.json();
+            const qtd = Array.isArray(resultado) ? resultado.length : 1;
+            msg.textContent = editandoTransacaoId
+                ? 'Lançamento atualizado.'
+                : (qtd > 1 ? `${qtd} parcelas lançadas.` : 'Lançamento adicionado.');
             msg.classList.add('show', 'ok');
-            e.target.reset();
-            document.getElementById('dataTransacao').valueAsDate = new Date();
+            cancelarEdicaoTransacao();
             await carregarTudo();
         } catch (err) {
             msg.textContent = err.message;

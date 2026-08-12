@@ -1,0 +1,1 @@
+ALTER TABLE transacao ADD COLUMN grupo_recorrencia VARCHAR(36);

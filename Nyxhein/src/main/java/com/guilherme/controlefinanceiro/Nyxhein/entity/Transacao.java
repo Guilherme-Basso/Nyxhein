@@ -31,6 +31,8 @@ public class Transacao {
     private StatusTransacao status;
     @Column(name = "data_vencimento")
     private LocalDate dataVencimento;
+    @Column(name = "grupo_recorrencia", length = 36)
+    private String grupoRecorrencia;
 
     public Transacao(){
 
@@ -106,5 +108,13 @@ public class Transacao {
 
     public void setDataVencimento(LocalDate dataVencimento) {
         this.dataVencimento = dataVencimento;
+    }
+
+    public String getGrupoRecorrencia() {
+        return grupoRecorrencia;
+    }
+
+    public void setGrupoRecorrencia(String grupoRecorrencia) {
+        this.grupoRecorrencia = grupoRecorrencia;
     }
 }

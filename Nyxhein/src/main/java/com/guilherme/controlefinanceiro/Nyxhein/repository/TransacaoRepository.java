@@ -14,6 +14,7 @@ import java.util.List;
 public interface TransacaoRepository extends JpaRepository<Transacao, Long> {
     List<Transacao> findByContaId (Long contaId);
     List<Transacao> findByCategoriaId (Long categoriaId);
+    List<Transacao> findByGrupoRecorrenciaAndStatus(String grupoRecorrencia, StatusTransacao status);
 
     @Query("""
         SELECT new com.guilherme.controlefinanceiro.Nyxhein.dto.TotalPorCategoria(
